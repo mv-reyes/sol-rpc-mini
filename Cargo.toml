@@ -1,0 +1,10 @@
+[package]
+name = "sol-rpc-mini"
+version = "0.2.0"
+edition = "2021"
+description = "Minimal JSON-RPC client for Solana (no sdk dependency)"
+license = "MIT"
+
+[dependencies]
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
