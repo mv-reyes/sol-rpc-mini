@@ -5,6 +5,8 @@
 
 use serde_json::{json, Value};
 
+pub mod det;
+
 pub const MAINNET: &str = "https://api.mainnet-beta.solana.com";
 
 const B58: &[u8] = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
