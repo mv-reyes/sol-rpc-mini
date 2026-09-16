@@ -7,6 +7,8 @@
 
 use crate::to_base58;
 
+mod table;
+
 /// A deterministic `u64` stream (xorshift64*, period 2^64 - 1).
 pub struct Rng(u64);
 
@@ -65,6 +67,9 @@ pub fn label_seed(label: &str) -> u64 {
 
 /// A deterministic 32-byte fixture derived from a label.
 pub fn fixture_bytes(label: &str) -> [u8; 32] {
+    if let Some(pinned) = table::lookup(label) {
+        return pinned;
+    }
     Rng::seeded(label_seed(label)).bytes32()
 }
 

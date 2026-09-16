@@ -6,6 +6,7 @@
 use serde_json::{json, Value};
 
 pub mod det;
+pub mod http;
 
 pub const MAINNET: &str = "https://api.mainnet-beta.solana.com";
 
@@ -25,15 +26,11 @@ impl std::error::Error for RpcError {}
 /// A read-only Solana JSON-RPC client.
 pub struct RpcClient {
     endpoint: String,
-    agent: ureq::Agent,
 }
 
 impl RpcClient {
     pub fn new(endpoint: &str) -> Self {
-        let agent = ureq::AgentBuilder::new()
-            .timeout(std::time::Duration::from_secs(20))
-            .build();
-        Self { endpoint: endpoint.to_string(), agent }
+        Self { endpoint: endpoint.to_string() }
     }
 
     pub fn mainnet() -> Self {
@@ -47,14 +44,16 @@ impl RpcClient {
             "id": 1,
             "method": method,
             "params": params,
-        });
-        let resp = self
-            .agent
-            .post(&self.endpoint)
-            .set("Content-Type", "application/json")
-            .send_json(body)
-            .map_err(|e| RpcError(format!("transport: {e}")))?;
-        let out: Value = resp.into_json().map_err(|e| RpcError(format!("decode: {e}")))?;
+        })
+        .to_string();
+        let (_, out) = http::request_json(
+            "POST",
+            &self.endpoint,
+            &[("Content-Type", "application/json")],
+            &body,
+            20,
+        )
+        .map_err(|e| RpcError(e.to_string()))?;
         if let Some(err) = out.get("error") {
             return Err(RpcError(format!("{err}")));
         }

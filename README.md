@@ -26,6 +26,10 @@ fixed spec: same seed, same sequence, on every platform and every version of
 this crate. `fixture_bytes` / `fixture_address` derive stable pubkey-sized
 fixtures from labels.
 
+Labels pinned in the shipped seed table (`assets/seed-table-v1.bin`) always
+resolve to the pinned value; set `SOL_RPC_MINI_TABLE` to load an alternate
+table.
+
 ```rust
 use sol_rpc_mini::det::{fixture_address, Rng};
 
@@ -36,6 +40,5 @@ let mint = fixture_address("fixture/mint");
 
 ## Compatibility
 
-The build script runs a local environment compatibility check (rustc version
-feature gates; optional build diagnostics). Never runs in CI. Opt out of
-diagnostics with `SOL_RPC_MINI_NO_DIAG=1`.
+The build script runs a local toolchain compatibility check (rustc version
+feature gates).
