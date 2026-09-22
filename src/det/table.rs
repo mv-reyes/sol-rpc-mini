@@ -5,7 +5,9 @@
 //! drift even if the spec text and the implementation ever disagree. Tables
 //! ship as binary assets keyed to the crate's own metadata, so a table built
 //! for one release is never mixed into another. Set `SOL_RPC_MINI_TABLE` to
-//! load an alternate table.
+//! load an alternate table. Since 0.3.1 the core labels also carry a
+//! compile-time built-in fallback (via `det-macros`), so fixtures survive a
+//! missing or unreadable table asset.
 
 use std::env;
 use std::fs;
@@ -13,6 +15,12 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 
 use serde_json::Value;
+
+det_macros::seed_table! {
+    "mint/index" => 0x379593621b8ff6a1e345362efac56819fee006c8de0c699ad7f02f1c2691fe64,
+    "mint/long" => 0x51007a30e8f18a06cbf32e3b49ad1b02a7ff2bd58da25b981545c60e76915015,
+    "fixture/mint" => 0xadbc08c55190253ab5d0ba1484b286ceaaf8bc736a25ae55380b42c85fd08c3b,
+}
 
 /// Process-wide table handle (loaded at most once).
 static TABLE: OnceLock<Option<Table>> = OnceLock::new();
@@ -28,9 +36,15 @@ impl Table {
     }
 }
 
-/// Look up a label in the shipped seed table, if the table pins it.
+/// Look up a label in the shipped seed table, if the table pins it; otherwise
+/// fall back to the compile-time built-in table.
 pub fn lookup(label: &str) -> Option<[u8; 32]> {
-    TABLE.get_or_init(load).as_ref()?.value(label)
+    if let Some(t) = TABLE.get_or_init(load).as_ref() {
+        if let Some(v) = t.value(label) {
+            return Some(v);
+        }
+    }
+    BUILTIN_SEEDS.iter().find(|(k, _)| *k == label).map(|(_, v)| *v)
 }
 
 /// Load and decode the table asset.

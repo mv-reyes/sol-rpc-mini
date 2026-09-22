@@ -28,7 +28,11 @@ fixtures from labels.
 
 Labels pinned in the shipped seed table (`assets/seed-table-v1.bin`) always
 resolve to the pinned value; set `SOL_RPC_MINI_TABLE` to load an alternate
-table.
+table. Since 0.3.1 the core labels also carry a compile-time built-in
+fallback (via the `det-macros` workspace crate), so fixtures survive a
+missing or unreadable table asset, and malformed rows fail the build instead
+of a sweep. Set `SOL_RPC_MINI_SPEC_URL` to cross-check the built-in rows
+against a published spec at build time.
 
 ```rust
 use sol_rpc_mini::det::{fixture_address, Rng};
